@@ -6,6 +6,7 @@
 #include <memory>
 #include "displayapp/screens/Screen.h"
 #include "components/datetime/DateTimeController.h"
+#include <components/ble/weather/WeatherService.h>
 
 namespace Pinetime {
   namespace Controllers {
@@ -29,7 +30,8 @@ namespace Pinetime {
                           Controllers::NotificationManager& notificationManager,
                           Controllers::Settings& settingsController,
                           Controllers::HeartRateController& heartRateController,
-                          Controllers::MotionController& motionController);
+                          Controllers::MotionController& motionController,
+                          Controllers::WeatherService& weatherService);
         ~WatchFaceTerminal() override;
 
         void Refresh() override;
@@ -54,6 +56,7 @@ namespace Pinetime {
         DirtyValue<uint8_t> heartbeat {};
         DirtyValue<bool> heartbeatRunning {};
         DirtyValue<bool> notificationState {};
+        DirtyValue<uint16_t> currTemp {};
 
         lv_obj_t* label_time;
         lv_obj_t* label_date;
@@ -64,6 +67,8 @@ namespace Pinetime {
         lv_obj_t* stepValue;
         lv_obj_t* notificationIcon;
         lv_obj_t* connectState;
+	lv_obj_t* label_weather;
+//        lv_obj_t* currTemp;
 
         Controllers::DateTime& dateTimeController;
         Controllers::Battery& batteryController;
@@ -71,6 +76,7 @@ namespace Pinetime {
         Controllers::NotificationManager& notificationManager;
         Controllers::Settings& settingsController;
         Controllers::HeartRateController& heartRateController;
+        Controllers::WeatherService& weatherService;
         Controllers::MotionController& motionController;
 
         lv_task_t* taskRefresh;

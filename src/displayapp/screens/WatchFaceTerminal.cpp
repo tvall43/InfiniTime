@@ -10,6 +10,7 @@
 #include "components/heartrate/HeartRateController.h"
 #include "components/motion/MotionController.h"
 #include "components/settings/Settings.h"
+#include <components/ble/weather/WeatherService.h>
 
 using namespace Pinetime::Applications::Screens;
 
@@ -20,7 +21,8 @@ WatchFaceTerminal::WatchFaceTerminal(DisplayApp* app,
                                      Controllers::NotificationManager& notificationManager,
                                      Controllers::Settings& settingsController,
                                      Controllers::HeartRateController& heartRateController,
-                                     Controllers::MotionController& motionController)
+                                     Controllers::MotionController& motionController,
+                                     Controllers::WeatherService& weather)
   : Screen(app),
     currentDateTime {{}},
     dateTimeController {dateTimeController},
@@ -29,7 +31,10 @@ WatchFaceTerminal::WatchFaceTerminal(DisplayApp* app,
     notificationManager {notificationManager},
     settingsController {settingsController},
     heartRateController {heartRateController},
-    motionController {motionController} {
+    motionController {motionController},
+    weatherService(weather) {
+  settingsController.SetClockFace(3);
+
   batteryValue = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_recolor(batteryValue, true);
   lv_obj_align(batteryValue, lv_scr_act(), LV_ALIGN_IN_LEFT_MID, 0, -20);
@@ -47,11 +52,15 @@ WatchFaceTerminal::WatchFaceTerminal(DisplayApp* app,
 
   label_prompt_1 = lv_label_create(lv_scr_act(), nullptr);
   lv_obj_align(label_prompt_1, lv_scr_act(), LV_ALIGN_IN_LEFT_MID, 0, -80);
-  lv_label_set_text_static(label_prompt_1, "user@watch:~ $ now");
+  lv_label_set_text_static(label_prompt_1, "tim@watch:~ $ now");
+
+  label_weather = lv_label_create(lv_scr_act(), nullptr);
+  lv_obj_align(label_weather, lv_scr_act(), LV_ALIGN_IN_LEFT_MID, 0, 60);
+  lv_label_set_text(label_weather, "[WTHR]--°C");
 
   label_prompt_2 = lv_label_create(lv_scr_act(), nullptr);
-  lv_obj_align(label_prompt_2, lv_scr_act(), LV_ALIGN_IN_LEFT_MID, 0, 60);
-  lv_label_set_text_static(label_prompt_2, "user@watch:~ $");
+  lv_obj_align(label_prompt_2, lv_scr_act(), LV_ALIGN_IN_LEFT_MID, 0, 80);
+  lv_label_set_text_static(label_prompt_2, "tim@watch:~ $");
 
   label_time = lv_label_create(lv_scr_act(), nullptr);
   lv_label_set_recolor(label_time, true);
@@ -80,7 +89,7 @@ void WatchFaceTerminal::Refresh() {
   if (batteryPercentRemaining.IsUpdated() || powerPresent.IsUpdated()) {
     lv_label_set_text_fmt(batteryValue, "[BATT]#387b54 %d%%", batteryPercentRemaining.Get());
     if (batteryController.IsPowerPresent()) {
-      lv_label_ins_text(batteryValue, LV_LABEL_POS_LAST, " Charging");
+      lv_label_ins_text(batteryValue, LV_LABEL_POS_LAST, " +");
     }
   }
 
@@ -101,7 +110,7 @@ void WatchFaceTerminal::Refresh() {
   notificationState = notificationManager.AreNewNotificationsAvailable();
   if (notificationState.IsUpdated()) {
     if (notificationState.Get()) {
-      lv_label_set_text_static(notificationIcon, "You have mail.");
+      lv_label_set_text_static(notificationIcon, "You have new mail.");
     } else {
       lv_label_set_text_static(notificationIcon, "");
     }
@@ -171,4 +180,25 @@ void WatchFaceTerminal::Refresh() {
   if (stepCount.IsUpdated() || motionSensorOk.IsUpdated()) {
     lv_label_set_text_fmt(stepValue, "[STEP]#ee3377 %lu steps#", stepCount.Get());
   }
+
+
+
+  std::unique_ptr<Controllers::WeatherData::Temperature>& current = weatherService.GetCurrentTemperature();
+  if (current->timestamp == 0) {
+    // Do not use the data, it's invalid
+    lv_label_set_text_fmt(label_weather,
+                          "[WTHR]%d°C",
+                          0,
+                          0);
+  } else {
+    lv_label_set_text_fmt(label_weather,
+                          "[WTHR]%d°C",
+                          current->temperature / 100,
+                          current->expires);
+//  currTemp = (weatherService.GetTodayMinTemp() / 100);
+ // if (currTemp.IsUpdated()) {
+ //   lv_label_set_text_fmt(label_weather, "[WTHR]%i°C", currTemp);
+//    lv_obj_realign(currTemp);
+  }
+
 }
