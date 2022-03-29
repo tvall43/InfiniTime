@@ -184,16 +184,22 @@ void WatchFaceTerminal::Refresh() {
 
 
   std::unique_ptr<Controllers::WeatherData::Temperature>& current = weatherService.GetCurrentTemperature();
+
+  currTempC = (current->temperature / 100);
+  currTempF = (((current->temperature / 100 ) * 9 / 5 ) + 32);
+
   if (current->timestamp == 0) {
     // Do not use the data, it's invalid
+//    lv_label_set_text_fmt(label_weather, "[WTHR]--°F", currTempF);
     lv_label_set_text_fmt(label_weather,
-                          "[WTHR]%d°C",
-                          0,
+                          "[WTHR]%d°f",
+                          "--",
                           0);
   } else {
+//    lv_label_set_text_fmt(label_weather, "[WTHR]%i°F", currTempF);
     lv_label_set_text_fmt(label_weather,
-                          "[WTHR]%d°C",
-                          current->temperature / 100,
+                          "[WTHR]%d°f",
+                          ((current->temperature / 100) * 9 / 5 ) + 32,
                           current->expires);
 //  currTemp = (weatherService.GetTodayMinTemp() / 100);
  // if (currTemp.IsUpdated()) {

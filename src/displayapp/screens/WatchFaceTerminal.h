@@ -56,7 +56,8 @@ namespace Pinetime {
         DirtyValue<uint8_t> heartbeat {};
         DirtyValue<bool> heartbeatRunning {};
         DirtyValue<bool> notificationState {};
-        DirtyValue<uint16_t> currTemp {};
+        DirtyValue<uint16_t> currTempC {};
+        DirtyValue<uint16_t> currTempF {};
 
         lv_obj_t* label_time;
         lv_obj_t* label_date;
